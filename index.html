@@ -1086,6 +1086,11 @@
         document.getElementById('menuButton').onclick=showDashboard;
         document.getElementById('quitGameButton').onclick=doQuit;
         document.getElementById('muteToggleBtn').onclick=()=>{ toggleMusicMute(); };
+        // Stats view buttons
+        const backStatsBtn = document.getElementById('backFromStatsBtn');
+        if(backStatsBtn) backStatsBtn.onclick = showDashboard;
+        const statsQuit = document.getElementById('statsQuitBtn');
+        if(statsQuit) statsQuit.onclick = doQuit;
         
         // Game Over Overlay buttons
         document.getElementById('tryAgainBtn').onclick = tryAgainGame;
