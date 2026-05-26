@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
+    <meta name="theme-color" content="#0a0f1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>GRAVITY BOUNCE · TAP TO LAUNCH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        html {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            font-family: -apple-system, 'Segoe UI', system-ui, 'Helvetica Neue', sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #020408);
+            min-height: 100vh;
+            height: 100%;
+            width: 100%;
+            color: #eef4ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            touch-action: none;
+            overflow-x: hidden;
+        }
+
+        .ambus-container {
+            min-height: 100vh;
+            height: 100%;
+            max-width: 100%;
+            width: 100%;
+            background: rgba(8, 15, 28, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 2px solid rgba(0, 255, 255, 0.45);
+            padding: 10px;
+        }
+
+        .game-header {
+            text-align: center;
+            padding: 14px 12px 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .game-header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #b0ffff, #ffd966);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .game-header p {
+            font-size: 0.6rem;
+            opacity: 0.7;
+        }
+
+        .glass-card {
+            background: rgba(18, 28, 48, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 14px;
+            border: 1px solid rgba(72, 187, 255, 0.25);
+            margin-bottom: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #9bc9ff;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0a1222;
+            border: 1px solid #2c4c7c;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.9rem;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        button {
+            background: #2c5a8c;
+            border: none;
+            padding: 14px 18px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.9rem;
+            touch-action: manipulation;
+        }
+
+        button.primary {
+            background: linear-gradient(95deg, #0f5c9e, #1e3c6c);
+        }
+
+        button.quit-btn {
+            background: #8b2c2c;
+        }
+
+        button.try-again {
+            background: #2c6e3c;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            justify-content: center;
+        }
+
+        .button-group button {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stats-badge {
+            background: #07121fcc;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 0.7rem;
+            backdrop-filter: blur(2px);
+            display: inline-block;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            background: #020617;
+            box-shadow: 0 6px 16px black;
+            border: 2px solid rgba(0, 255, 255, 0.7);
+            display: block;
+            touch-action: none;
+            cursor: pointer;
+        }
+
+        .simple-dashboard {
+            margin: 14px auto;
+            border-radius: 28px;
+            background: radial-gradient(circle at top, rgba(16, 28, 70, 0.96), rgba(2, 6, 16, 0.98));
+            border: 1px solid rgba(0, 255, 255, 0.4);
+        }
+
+        .dashboard-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 14px 0;
+        }
+
+        .dashboard-buttons button, .dashboard-buttons select {
+            width: 100%;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 60px;
+            text-align: center;
+        }
+
+        .mute-button {
+            background: #4a4a8f;
+            color: white;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,255,255,0.2);
+        }
+
+        .game-toast {
+            position: fixed;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(12px);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            z-index: 10001;
+            text-align: center;
+            white-space: nowrap;
+            border-left: 5px solid;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            animation: fadeInOut 2.5s ease forwards;
+            pointer-events: none;
+        }
+        .game-toast.warning { border-left-color: #ffaa33; background: rgba(30,20,10,0.98); color: #ffcc66; }
+        .game-toast.error { border-left-color: #ff5555; background: rgba(40,10,10,0.98); color: #ff8888; }
+        .game-toast.success { border-left-color: #55ff55; background: rgba(10,40,10,0.98); color: #aaffaa; }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) scale(0.9); }
+            15% { opacity: 1; transform: translateX(-50%) scale(1); }
+            85% { opacity: 1; transform: translateX(-50%) scale(1); }
+            100% { opacity: 0; transform: translateX(-50%) scale(0.9); visibility: hidden; }
+        }
+
+        /* GAME OVER OVERLAY */
+        #gameOverlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.94);
+            backdrop-filter: blur(16px);
+            z-index: 10002;
+            padding: 20px;
+        }
+        #gameOverCard {
+            max-width: 340px;
+            width: 100%;
+            background: rgba(10, 20, 45, 0.98);
+            border-radius: 44px;
+            padding: 28px 20px;
+            border: 2px solid #ff6644;
+            box-shadow: 0 0 35px rgba(255,50,50,0.4);
+            text-align: center;
+        }
+        #gameOverCard h2 {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            color: #ff8866;
+        }
+        #gameOverScore {
+            font-size: 2.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, gold, #ffaa66);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 12px 0;
+        }
+        .gameover-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .gameover-buttons button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+        }
+        .tryagain-btn { background: #2e7d32; }
+        .menuover-btn { background: #1e4e6e; }
+
+        #loginOverlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(16px);
+            z-index: 9999;
+            padding: 16px;
+        }
+        #loginCard {
+            width: 100%;
+            max-width: 340px;
+            background: rgba(10, 20, 45, 0.98);
+            border-radius: 44px;
+            padding: 24px 20px;
+            border: 1px solid cyan;
+            box-shadow: 0 0 30px rgba(0,255,255,0.2);
+        }
+        #instrOverlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.94);
+            backdrop-filter: blur(12px);
+            z-index: 10000;
+            padding: 20px;
+        }
+        #instrCard { max-width: 90%; border-radius: 32px; }
+
+        .game-stats-panel {
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-label { color: #7ee0ff; font-weight: bold; font-size: 0.8rem; }
+        .stat-value { font-family: monospace; font-size: 1rem; font-weight: bold; }
+
+        footer {
+            text-align: center;
+            font-size: 0.5rem;
+            padding: 10px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+                align-items: stretch;
+                justify-content: flex-start;
+            }
+            .ambus-container {
+                min-height: 100vh;
+                height: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border: none;
+            }
+            .glass-card { padding: 12px; }
+            .dashboard-buttons button, .dashboard-buttons select { padding: 12px; font-size: 0.9rem; }
+            .stats-badge { font-size: 0.65rem; padding: 4px 10px; }
+            .game-toast { font-size: 0.7rem; padding: 10px 18px; white-space: nowrap; }
+            canvas { max-height: calc(100vh - 260px); }
+            @media (max-width: 480px) { .game-toast { white-space: normal; max-width: 85%; text-align: center; font-size: 0.7rem; } }
+        }
+
+        .drag-instruction {
+            text-align: center;
+            font-size: 0.65rem;
+            margin-top: 8px;
+            color: #7ee0ff;
+        }
+        .login-note {
+            text-align: center;
+            font-size: 0.6rem;
+            margin-top: 12px;
+            color: #88aaff;
+        }
+        
+        .level-indicator {
+            background: rgba(0,0,0,0.6);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .tap-hint {
+            background: rgba(0,255,255,0.15);
+            border-radius: 40px;
+            padding: 6px 12px;
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 8px;
+            color: #88ddff;
+        }
+    </style>
+</head>
+<body>
+<div id="loginOverlay">
+    <div id="loginCard">
+        <div style="text-align:center; font-size:1.4rem; font-weight:bold;">⚡ GRAVITY BOUNCE ⚡</div>
+        <div style="text-align:center; margin:4px 0 18px; color:#7ee0ff; font-size:0.75rem;">DRAG TO MOVE</div>
+        <div class="form-group"><label>USERNAME</label><input id="loginUser" placeholder="Enter username" autocomplete="off"></div>
+        <div class="form-group"><label>PASSWORD</label><input id="loginPass" type="password" placeholder="••••••"></div>
+        <button id="loginBtn" class="primary" style="width:100%; margin-bottom:10px;">🚀 SIGN IN</button>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <button id="guestBtn">🎮 PLAY AS GUEST</button>
+            <button id="createBtn" style="background:#2a4b6e;">✨ CREATE ACCOUNT</button>
+        </div>
+        <div class="login-note">💡 Don't have an account? Click "CREATE ACCOUNT" to get started!</div>
+    </div>
+</div>
+<div id="instrOverlay"><div id="instrCard" class="glass-card"><h3 style="text-align:center;">🎯 HOW TO PLAY</h3><p style="margin:12px 0; font-size:0.85rem;">👉 <strong>DRAG your finger</strong> left/right on the game screen to move the paddle<br>👉 <strong>TAP anywhere on the screen OR tap the ball</strong> to launch it!<br>👉 Break bricks, collect powerups (LASER, MULTI, GIANT)<br>👉 Each brick hit makes a satisfying POP sound!<br>👉 <strong>Select difficulty from menu BEFORE playing</strong> - it affects brick HP, speed and rows!</p><button id="closeInstrBtn" class="primary" style="width:100%;">GOT IT</button></div></div>
+
+<!-- GAME OVER OVERLAY -->
+<div id="gameOverlay">
+    <div id="gameOverCard">
+        <h2>💀 GAME OVER 💀</h2>
+        <div style="font-size: 0.9rem; opacity:0.8;">YOUR FINAL SCORE</div>
+        <div id="gameOverScore">0</div>
+        <div class="gameover-buttons">
+            <button id="tryAgainBtn" class="tryagain-btn">🔄 TRY AGAIN</button>
+            <button id="menuFromOverBtn" class="menuover-btn">📋 BACK TO MENU</button>
+        </div>
+    </div>
+</div>
+
+<div class="ambus-container">
+    <div class="game-header">
+        <h1>⚡ GRAVITY BOUNCE ⚡</h1>
+        <p>✦ DRAG TO MOVE · TAP TO LAUNCH ✦</p>
+    </div>
+
+    <div id="dashboardPanel" style="display:none;" class="simple-dashboard glass-card">
+        <div style="text-align:center; margin-bottom:14px;">
+            <h2 style="color:#5cf0ff; font-size:1.2rem;">⚡ GRAVITY BOUNCE ⚡</h2>
+            <p style="font-size:0.65rem;"> SELECT DIFFICULTY</p>
+        </div>
+        <div class="dashboard-buttons">
+            <button id="dashPlayBtn" class="primary">🎮 PLAY GAME</button>
+            <select id="dashLevelSelect">
+                <option value="0">🌿 EASY - 3 rows, slow ball</option>
+                <option value="1">🔥 MEDIUM - 4 rows, medium ball</option>
+                <option value="2">💀 HARD - 5 rows, fast ball + 3HP bricks</option>
+            </select>
+            <button id="dashInstrBtn">📖 INSTRUCTIONS</button>
+            <button id="dashStatsBtn">🏆 STATS</button>
+            <button id="muteButton" class="mute-button">🔇 MUTE</button>
+            <button id="dashQuitBtn" class="quit-btn">🚪 QUIT</button>
+        </div>
+        <div class="stats-row">
+            <span class="stats-badge">🏅 BEST: <span id="dashHighScore">0</span></span>
+            <span class="stats-badge">🎮 GAMES: <span id="dashTotalGames">0</span></span>
+            <span class="stats-badge">✨ COMBO: <span id="dashBestCombo">0</span></span>
+        </div>
+        <div style="margin-top:12px; text-align:center; font-size:0.7rem; color:#ffcc66;">
+            ⚡ SELECT YOUR LEVEL BEFORE PRESSING PLAY ⚡
+        </div>
+    </div>
+
+    <div id="gameTab" class="glass-card" style="display:none;">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <span class="stats-badge">💥 SCORE: <span id="gameScore">0</span></span>
+            <span class="stats-badge">❤️ LIVES: <span id="gameLives">3</span></span>
+            <span class="stats-badge">🔥 COMBO: <span id="gameCombo">0</span></span>
+            <span class="stats-badge">⚡ DIFFICULTY: <span id="gameLevel">EASY</span></span>
+        </div>
+        <canvas id="gameCanvas" width="800" height="480" style="width:100%; touch-action: none;"></canvas>
+        
+        <div class="button-group" style="margin-top: 14px;">
+            <button id="menuButton" class="primary">📋 MENU</button>
+            <button id="quitGameButton" class="quit-btn">🚪 QUIT</button>
+            <button id="muteToggleBtn" class="mute-button">🔇 MUTE </button>
+        </div>
+        <div class="tap-hint">
+            💡 TIP: Tap ANYWHERE on the game screen to LAUNCH the ball!</br>
+            👇 DRAG YOUR FINGER LEFT/RIGHT ON THE GAME SCREEN TO MOVE PADDLE 👇
+        </div>
+        <div class="drag-instruction"></div>
+    </div>
+
+    <div id="statsView" class="glass-card" style="display:none;">
+        <h3 style="text-align:center; margin-bottom:14px;">🏆 STATISTICS</h3>
+        <div class="game-stats-panel">
+            <div class="stat-item"><span class="stat-label">🏅 HIGH SCORE:</span><span class="stat-value" id="statHighScore">0</span></div>
+            <div class="stat-item"><span class="stat-label">🎮 TOTAL GAMES:</span><span class="stat-value" id="statTotalGames">0</span></div>
+            <div class="stat-item"><span class="stat-label">✨ BEST COMBO:</span><span class="stat-value" id="statBestCombo">0</span></div>
+            <div class="stat-item"><span class="stat-label">💥 SESSION BEST:</span><span class="stat-value" id="statSessionBest">0</span></div>
+        </div>
+        <div class="button-group" style="margin-top:16px;">
+            <button id="backFromStatsBtn" class="primary">← MENU</button>
+            <button id="statsQuitBtn" class="quit-btn">QUIT</button>
+        </div>
+    </div>
+
+    <footer>⚡ DRAG to move paddle · TAP to launch ball · Level affects brick rows, HP, and ball speed!</footer>
+</div>
+
+<script>
+    // ==================== GLOBAL ====================
+    const DB_NAME = 'AmbusBounceDB';
+    const STORE_ACT = 'activities';
+    let db = null;
+    let gameProfile = { highScore: 0, totalGames: 0, bestCombo: 0 };
+    let animationFrameId = null;
+    let sessionBestScore = 0;
+    let musicContext = null;
+    let musicGainNode = null;
+    let musicMuted = false;
+    let sfxMuted = false;
+    let bgmNodes = [];
+    
+    // Track last game over score
+    let lastGameOverScore = 0;
+    
+    // ============= SOUND EFFECT: BRICK HIT =============
+    function playHitSound() {
+        if (sfxMuted) return;
+        if (!musicContext) {
+            try {
+                musicContext = new (window.AudioContext || window.webkitAudioContext)();
+                musicContext.resume().catch(()=>{});
+            } catch(e) { return; }
+        }
+        if (musicContext.state === 'suspended') {
+            musicContext.resume().catch(()=>{});
+        }
+        const now = musicContext.currentTime;
+        const osc = musicContext.createOscillator();
+        const gain = musicContext.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = 880;
+        gain.gain.value = 0.25;
+        osc.connect(gain);
+        gain.connect(musicContext.destination);
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+        osc.stop(now + 0.25);
+        const osc2 = musicContext.createOscillator();
+        const gain2 = musicContext.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.value = 1240;
+        gain2.gain.value = 0.12;
+        osc2.connect(gain2);
+        gain2.connect(musicContext.destination);
+        osc2.start();
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+        osc2.stop(now + 0.2);
+    }
+    
+    // ============= MARIO STYLE BGM =============
+    function startBackgroundMusic() {
+        if(musicContext) {
+            if(musicContext.state === 'suspended') musicContext.resume().catch(() => {});
+            return;
+        }
+        try { 
+            musicContext = new (window.AudioContext || window.webkitAudioContext)(); 
+        } catch (err) { return; }
+        musicContext.resume().catch(() => {});
+        
+        const masterGain = musicContext.createGain();
+        masterGain.gain.value = musicMuted ? 0 : 0.11;
+        musicGainNode = masterGain;
+        masterGain.connect(musicContext.destination);
+        
+        const lead = musicContext.createOscillator();
+        lead.type = 'square';
+        const leadGain = musicContext.createGain();
+        leadGain.gain.value = 0.09;
+        lead.connect(leadGain);
+        leadGain.connect(masterGain);
+        
+        const bass = musicContext.createOscillator();
+        bass.type = 'triangle';
+        const bassGain = musicContext.createGain();
+        bassGain.gain.value = 0.07;
+        bass.connect(bassGain);
+        bassGain.connect(masterGain);
+        
+        const arp = musicContext.createOscillator();
+        arp.type = 'sine';
+        const arpGain = musicContext.createGain();
+        arpGain.gain.value = 0.05;
+        arp.connect(arpGain);
+        arpGain.connect(masterGain);
+        
+        const melodyNotes = [262, 294, 330, 262, 392, 330, 262, 294, 330, 262, 440, 392, 330];
+        let noteIndex = 0;
+        let melodyInterval;
+        function playNextMelodyNote() {
+            if(!musicContext || musicMuted || !lead) return;
+            lead.frequency.setTargetAtTime(melodyNotes[noteIndex % melodyNotes.length], musicContext.currentTime, 0.015);
+            noteIndex++;
+        }
+        const bassPattern = [110, 110, 146.83, 146.83, 164.81, 164.81, 174.61];
+        let bassIdx = 0;
+        function playBassNote() {
+            if(!musicContext || musicMuted || !bass) return;
+            bass.frequency.setTargetAtTime(bassPattern[bassIdx % bassPattern.length], musicContext.currentTime, 0.02);
+            bassIdx++;
+        }
+        const arpPattern = [523.25, 587.33, 659.25, 523.25, 783.99, 659.25];
+        let arpIdx = 0;
+        function playArpNote() {
+            if(!musicContext || musicMuted || !arp) return;
+            arp.frequency.setTargetAtTime(arpPattern[arpIdx % arpPattern.length], musicContext.currentTime, 0.02);
+            arpIdx++;
+        }
+        lead.start();
+        bass.start();
+        arp.start();
+        melodyInterval = setInterval(() => { if(!musicContext || musicMuted) return; playNextMelodyNote(); }, 240);
+        const bassInterval = setInterval(() => { if(!musicContext || musicMuted) return; playBassNote(); }, 480);
+        const arpInterval = setInterval(() => { if(!musicContext || musicMuted) return; playArpNote(); }, 160);
+        bgmNodes.push({ lead, bass, arp, melodyInterval, bassInterval, arpInterval, leadGain, bassGain, arpGain });
+        
+        const filter = musicContext.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 1800;
+        filter.Q.value = 1.1;
+        masterGain.disconnect();
+        masterGain.connect(filter);
+        filter.connect(musicContext.destination);
+        const lfo = musicContext.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.25;
+        const lfoGain = musicContext.createGain();
+        lfoGain.gain.value = 400;
+        lfo.connect(lfoGain);
+        lfoGain.connect(filter.frequency);
+        lfo.start();
+        bgmNodes.push({ lfo });
+    }
+    
+    function stopBackgroundMusic() {
+        if(bgmNodes.length) {
+            bgmNodes.forEach(item => {
+                if(item.lead) try { item.lead.stop(); } catch(e) {}
+                if(item.bass) try { item.bass.stop(); } catch(e) {}
+                if(item.arp) try { item.arp.stop(); } catch(e) {}
+                if(item.melodyInterval) clearInterval(item.melodyInterval);
+                if(item.bassInterval) clearInterval(item.bassInterval);
+                if(item.arpInterval) clearInterval(item.arpInterval);
+                if(item.lfo) try { item.lfo.stop(); } catch(e) {}
+            });
+            bgmNodes = [];
+        }
+        if(musicContext) { musicContext.close().catch(()=>{}); musicContext = null; musicGainNode = null; }
+    }
+
+    function toggleMusicMute() {
+        if(!musicContext) startBackgroundMusic();
+        if(!musicGainNode) return;
+        musicMuted = !musicMuted;
+        musicGainNode.gain.value = musicMuted ? 0 : 0.11;
+        const dashBtn = document.getElementById('muteButton');
+        const gameBtn = document.getElementById('muteToggleBtn');
+        const label = musicMuted ? '🔊 UNMUTE ' : '🔇 MUTE ';
+        if(dashBtn) dashBtn.innerText = label;
+        if(gameBtn) gameBtn.innerText = label;
+        showGameToast(musicMuted ? '🔇 MUTE' : '🔊  UNMUTE!', musicMuted ? 'warning' : 'success');
+    }
+    
+    function showGameToast(message, type = 'warning') {
+        const existingToast = document.querySelector('.game-toast');
+        if(existingToast) existingToast.remove();
+        const toast = document.createElement('div');
+        toast.className = `game-toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => { if(toast && toast.parentNode) toast.remove(); }, 2800);
+    }
+
+    // Profile functions
+    function initDB() { 
+        return new Promise((resolve, reject) => { 
+            const req = indexedDB.open(DB_NAME, 2); 
+            req.onerror = () => reject(req.error); 
+            req.onsuccess = e => { db = e.target.result; resolve(db); }; 
+            req.onupgradeneeded = e => { 
+                if(!e.target.result.objectStoreNames.contains(STORE_ACT)) 
+                    e.target.result.createObjectStore(STORE_ACT, { keyPath: 'id', autoIncrement: true }); 
+            }; 
+        }); 
+    }
+    function loadProfile() { 
+        const stored = localStorage.getItem('gravityBounceProfile'); 
+        if(stored) { 
+            let p = JSON.parse(stored); 
+            gameProfile = { highScore: p.highScore||0, totalGames: p.totalGames||0, bestCombo: p.bestCombo||0 }; 
+        } 
+        updateStatsUI(); 
+    }
+    function saveProfile() { 
+        localStorage.setItem('gravityBounceProfile', JSON.stringify(gameProfile)); 
+        updateStatsUI(); 
+        const curUser = JSON.parse(localStorage.getItem('ambusUser')||'null'); 
+        if(curUser && curUser.user && curUser.user !== 'Guest'){ 
+            let users = JSON.parse(localStorage.getItem('ambusUsers')||'{}'); 
+            if(users[curUser.user]){ users[curUser.user].profile = {...gameProfile}; localStorage.setItem('ambusUsers', JSON.stringify(users)); } 
+        } 
+    }
+    function updateStatsUI() { 
+        const hs = document.getElementById('statHighScore'); if(hs) hs.innerText = gameProfile.highScore;
+        const tg = document.getElementById('statTotalGames'); if(tg) tg.innerText = gameProfile.totalGames;
+        const bc = document.getElementById('statBestCombo'); if(bc) bc.innerText = gameProfile.bestCombo;
+        const dashHs = document.getElementById('dashHighScore'); if(dashHs) dashHs.innerText = gameProfile.highScore;
+        const dashTg = document.getElementById('dashTotalGames'); if(dashTg) dashTg.innerText = gameProfile.totalGames;
+        const dashBc = document.getElementById('dashBestCombo'); if(dashBc) dashBc.innerText = gameProfile.bestCombo;
+    }
+
+    // ==================== GAME ENGINE ====================
+    const canvas = document.getElementById('gameCanvas');
+    let ctx = canvas.getContext('2d');
+    let gameState = {
+        score: 0, lives: 3, combo: 0, maxCombo: 0,
+        balls: [], bricks: [], powerups: [],
+        paddle: { x: 0, y: 0, width: 120, height: 16, lasers: [] },
+        powerUpActive: null
+    };
+    let gameRunning = false;
+    let ballAttached = true;
+    let currentLevel = 0;
+
+    const levels = [
+        { name: "EASY", rows: 3, cols: 6, brickHP: 1, speedX: 4.0, speedY: -5.2, color: "#2ecc71", brickPoints: 100 },
+        { name: "MEDIUM", rows: 4, cols: 7, brickHP: 2, speedX: 5.5, speedY: -6.5, color: "#f1c40f", brickPoints: 150 },
+        { name: "HARD", rows: 5, cols: 8, brickHP: 3, speedX: 7.0, speedY: -7.8, color: "#e74c3c", brickPoints: 200 }
+    ];
+
+    function resizeCanvas() { 
+        const maxW = Math.min(800, window.innerWidth - 24);
+        const availableH = window.innerHeight - 220;
+        const idealH = Math.floor(maxW * 1.02);
+        canvas.width = maxW;
+        canvas.height = Math.min(560, Math.max(340, Math.min(idealH, availableH)));
+        initGameLevel(); 
+        drawGame(); 
+    }
+    
+    function initGameLevel() {
+        const lvl = levels[currentLevel];
+        gameState.bricks = [];
+        const horizontalGap = 4;
+        const brickW = Math.min(48, Math.max(24, Math.floor((canvas.width - (lvl.cols - 1) * horizontalGap - 16) / lvl.cols)));
+        const brickH = Math.min(20, Math.max(14, Math.floor(brickW * 0.28)));
+        const rowGap = Math.max(5, Math.floor(brickH * 0.22));
+        const startX = (canvas.width - (lvl.cols * brickW + (lvl.cols - 1) * rowGap)) / 2;
+        const topMargin = Math.max(38, Math.min(70, Math.floor(canvas.height * 0.12)));
+        for(let r = 0; r < lvl.rows; r++) {
+            for(let c = 0; c < lvl.cols; c++) {
+                gameState.bricks.push({ 
+                    x: startX + c * (brickW + rowGap), 
+                    y: topMargin + r * (brickH + rowGap), 
+                    w: brickW, h: brickH, 
+                    hp: lvl.brickHP, maxHp: lvl.brickHP, 
+                    points: lvl.brickPoints, color: lvl.color 
+                });
+            }
+        }
+        gameState.paddle.width = Math.min(100, canvas.width * 0.26);
+        gameState.paddle.x = canvas.width / 2 - gameState.paddle.width / 2;
+        gameState.paddle.y = canvas.height - Math.max(48, Math.floor(canvas.height * 0.12));
+        ballAttached = true;
+        gameState.balls = [{ x: gameState.paddle.x + gameState.paddle.width / 2 - 10, y: gameState.paddle.y - 14, vx: 0, vy: 0, radius: 10, attached: true }];
+        gameState.combo = 0; gameState.maxCombo = 0; gameState.score = 0;
+        gameState.paddle.lasers = []; gameState.powerups = []; gameState.powerUpActive = null;
+        gameState.lives = 3;
+        document.getElementById('gameScore').innerText = "0";
+        document.getElementById('gameLives').innerText = gameState.lives;
+        document.getElementById('gameCombo').innerText = "0";
+        document.getElementById('gameLevel').innerText = levels[currentLevel].name;
+    }
+
+    function resetGameFull() { 
+        gameState.lives = 3; 
+        gameState.score = 0; 
+        sessionBestScore = 0;
+        initGameLevel(); 
+        drawGame(); 
+    }
+    
+    // TAP TO LAUNCH - detects tap anywhere on canvas
+    function handleCanvasTap(e) {
+        e.preventDefault();
+        if (!gameRunning) return;
+        
+        // Only launch if ball is still attached to paddle
+        if (ballAttached && gameState.balls.length > 0) {
+            let lvl = levels[currentLevel];
+            gameState.balls[0].vx = lvl.speedX * (Math.random() > 0.5 ? 1 : -1);
+            gameState.balls[0].vy = lvl.speedY;
+            gameState.balls[0].attached = false;
+            ballAttached = false;
+            showGameToast("🚀 BALL LAUNCHED!", "success");
+        } 
+        // Also handle LASER activation if power-up active (optional feature)
+        else if (gameState.powerUpActive === 'LASER') {
+            gameState.paddle.lasers.push({ x: gameState.paddle.x + gameState.paddle.width / 2 - 3, y: gameState.paddle.y, w: 5, h: 16 });
+            showGameToast("⚡ LASER FIRED!", "success");
+        }
+    }
+    
+    function showGameOverOverlay(finalScore) {
+        lastGameOverScore = finalScore;
+        document.getElementById('gameOverScore').innerText = finalScore;
+        document.getElementById('gameOverlay').style.display = 'flex';
+    }
+    
+    function hideGameOverlay() {
+        document.getElementById('gameOverlay').style.display = 'none';
+        // Reset card border for next game over
+        document.getElementById('gameOverCard').style.borderColor = "#ff6644";
+        document.getElementById('gameOverCard').querySelector('h2').innerHTML = "💀 GAME OVER 💀";
+    }
+    
+    function tryAgainGame() {
+        hideGameOverlay();
+        resetGameFull();
+        if (!gameRunning) {
+            gameRunning = true;
+            gameLoop();
+        } else {
+            drawGame();
+        }
+        showGameToast(`🔄 TRY AGAIN! ${levels[currentLevel].name} mode`, 'success');
+    }
+    
+    function backToMenuFromGameOver() {
+        hideGameOverlay();
+        stopGameLoop();
+        document.getElementById('gameTab').style.display = 'none';
+        document.getElementById('dashboardPanel').style.display = 'block';
+        updateDashboardUI();
+        showGameToast(`📋 Returned to menu`, 'success');
+    }
+    
+    function updateGame() {
+        if(!gameRunning) return;
+        // lasers update
+        for(let i=0;i<gameState.paddle.lasers.length;i++){ 
+            let l=gameState.paddle.lasers[i]; l.y-=7; 
+            if(l.y<0){ gameState.paddle.lasers.splice(i,1); i--; continue; }
+            for(let b=0;b<gameState.bricks.length;b++){ 
+                let brick=gameState.bricks[b];
+                if(l.x<brick.x+brick.w && l.x+5>brick.x && l.y<brick.y+brick.h && l.y+16>brick.y){
+                    brick.hp--; gameState.paddle.lasers.splice(i,1);
+                    if(brick.hp<=0){ 
+                        gameState.bricks.splice(b,1); gameState.score+=brick.points; 
+                        document.getElementById('gameScore').innerText=gameState.score;
+                        if(gameState.score>sessionBestScore) sessionBestScore=gameState.score;
+                        playHitSound();
+                    } else { playHitSound(); }
+                    break;
+                }
+            }
+        }
+        for(let i=0;i<gameState.balls.length;i++){ 
+            let b=gameState.balls[i];
+            if(b.attached){ b.x=gameState.paddle.x+gameState.paddle.width/2-b.radius; b.y=gameState.paddle.y-12; continue; }
+            b.x+=b.vx; b.y+=b.vy;
+            if(b.x-b.radius<=0){ b.x=b.radius; b.vx=-b.vx; }
+            if(b.x+b.radius>=canvas.width){ b.x=canvas.width-b.radius; b.vx=-b.vx; }
+            if(b.y-b.radius<=0){ b.y=b.radius; b.vy=-b.vy; }
+            if(b.y+b.radius>=canvas.height){
+                gameState.balls.splice(i,1); i--;
+                gameState.lives--; document.getElementById('gameLives').innerText=gameState.lives;
+                gameState.combo=0; document.getElementById('gameCombo').innerText="0";
+                if(gameState.lives<=0){
+                    gameRunning = false;
+                    const finalScore = gameState.score;
+                    gameProfile.totalGames++;
+                    if(finalScore > gameProfile.highScore) gameProfile.highScore = finalScore;
+                    if(gameState.maxCombo > gameProfile.bestCombo) gameProfile.bestCombo = gameState.maxCombo;
+                    saveProfile();
+                    showGameOverOverlay(finalScore);
+                    return;
+                } else if(gameState.balls.length===0){
+                    ballAttached=true;
+                    gameState.balls.push({ x: gameState.paddle.x+gameState.paddle.width/2-10, y: gameState.paddle.y-14, vx:0, vy:0, radius:10, attached:true });
+                }
+                continue;
+            }
+            if(b.y+b.radius>=gameState.paddle.y && b.y-b.radius<=gameState.paddle.y+gameState.paddle.height &&
+               b.x+b.radius>gameState.paddle.x && b.x-b.radius<gameState.paddle.x+gameState.paddle.width && b.vy>0){
+                let hitPos=(b.x-gameState.paddle.x)/gameState.paddle.width;
+                let angle=(hitPos-0.5)*1.3;
+                b.vx=angle*6.5;
+                b.vy=-Math.abs(b.vy);
+                gameState.combo++;
+                if(gameState.combo>gameState.maxCombo) gameState.maxCombo=gameState.combo;
+                document.getElementById('gameCombo').innerText=gameState.combo;
+            }
+            for(let j=0;j<gameState.bricks.length;j++){
+                let brick=gameState.bricks[j];
+                if(b.x+b.radius>brick.x && b.x-b.radius<brick.x+brick.w && b.y+b.radius>brick.y && b.y-b.radius<brick.y+brick.h){
+                    let overlapL=b.x+b.radius-brick.x, overlapR=brick.x+brick.w-(b.x-b.radius);
+                    let overlapT=b.y+b.radius-brick.y, overlapB=brick.y+brick.h-(b.y-b.radius);
+                    let min=Math.min(overlapL,overlapR,overlapT,overlapB);
+                    if(min===overlapL||min===overlapR) b.vx=-b.vx;
+                    else b.vy=-b.vy;
+                    brick.hp--;
+                    playHitSound();
+                    if(brick.hp<=0){
+                        gameState.bricks.splice(j,1);
+                        let gain=Math.floor(brick.points*(1+gameState.combo*0.1));
+                        gameState.score+=gain;
+                        document.getElementById('gameScore').innerText=gameState.score;
+                        if(gameState.score>sessionBestScore) sessionBestScore=gameState.score;
+                        if(Math.random()<0.28){
+                            gameState.powerups.push({ x: brick.x+brick.w/2-12, y: brick.y, type: ['LASER','MULTI','GIANT'][Math.floor(Math.random()*3)], w:18, h:18 });
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        for(let i=0;i<gameState.powerups.length;i++){
+            let p=gameState.powerups[i]; p.y+=3;
+            if(p.y>canvas.height){ gameState.powerups.splice(i,1); continue; }
+            if(p.x+18>gameState.paddle.x && p.x<gameState.paddle.x+gameState.paddle.width && p.y+18>gameState.paddle.y && p.y<gameState.paddle.y+gameState.paddle.height){
+                if(p.type==='LASER') gameState.powerUpActive='LASER';
+                else if(p.type==='MULTI' && gameState.balls.length<4) gameState.balls.push({ ...gameState.balls[0], attached:false, vx:gameState.balls[0].vx+1.5, vy:gameState.balls[0].vy-1, radius:10 });
+                else if(p.type==='GIANT') gameState.balls.forEach(b=>b.radius=16);
+                gameState.powerups.splice(i,1);
+            }
+        }
+        if(gameState.bricks.length===0){ 
+            if(currentLevel < 2) {
+                currentLevel++;
+                showGameToast(`⭐ LEVEL UP! Now ${levels[currentLevel].name} difficulty!`, 'success');
+                initGameLevel();
+                ballAttached = true;
+                gameState.balls = [{ x: gameState.paddle.x + gameState.paddle.width / 2 - 10, y: gameState.paddle.y - 14, vx: 0, vy: 0, radius: 10, attached: true }];
+            } else {
+                gameRunning = false;
+                const finalScore = gameState.score;
+                gameProfile.totalGames++;
+                if(finalScore > gameProfile.highScore) gameProfile.highScore = finalScore;
+                if(gameState.maxCombo > gameProfile.bestCombo) gameProfile.bestCombo = gameState.maxCombo;
+                saveProfile();
+                document.getElementById('gameOverScore').innerText = finalScore;
+                document.getElementById('gameOverCard').style.borderColor = "#55ff55";
+                document.getElementById('gameOverCard').querySelector('h2').innerHTML = "🏆 VICTORY! 🏆";
+                showGameOverOverlay(finalScore);
+                return;
+            }
+        }
+        drawGame();
+    }
+
+    function drawGame() {
+        if(!ctx) return;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle="#03051a"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        gameState.bricks.forEach(b=>{ ctx.fillStyle=b.color; ctx.fillRect(b.x,b.y,b.w,b.h); if(b.maxHp>1){ ctx.fillStyle="white"; ctx.font="10px monospace"; ctx.fillText("❤️".repeat(b.hp), b.x+4, b.y+14); } });
+        ctx.fillStyle = gameState.powerUpActive==='LASER'?"#f39c12":"#3498db";
+        ctx.fillRect(gameState.paddle.x, gameState.paddle.y, gameState.paddle.width, gameState.paddle.height);
+        gameState.paddle.lasers.forEach(l=>{ ctx.fillStyle="cyan"; ctx.fillRect(l.x,l.y,l.w,l.h); });
+        gameState.balls.forEach(b=>{ ctx.beginPath(); ctx.arc(b.x,b.y,b.radius,0,Math.PI*2); ctx.fillStyle="#ffaa66"; ctx.fill(); });
+        gameState.powerups.forEach(p=>{ ctx.fillStyle="#dd44ff"; ctx.fillRect(p.x,p.y,18,18); ctx.fillStyle="white"; ctx.font="bold 10px monospace"; ctx.fillText(p.type[0], p.x+5, p.y+13); });
+    }
+
+    function gameLoop(){ if(gameRunning){ updateGame(); animationFrameId=requestAnimationFrame(gameLoop); } }
+    function startGameLoop(){ if(animationFrameId) cancelAnimationFrame(animationFrameId); gameRunning=true; gameLoop(); }
+    function stopGameLoop(){ gameRunning=false; if(animationFrameId){ cancelAnimationFrame(animationFrameId); animationFrameId=null; } }
+
+    // Drag controls for paddle
+    let activeTouchId = null;
+    function handleDrag(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        const canvasX = (clientX - rect.left) * (canvas.width / rect.width);
+        let newPaddleX = canvasX - gameState.paddle.width / 2;
+        newPaddleX = Math.max(0, Math.min(canvas.width - gameState.paddle.width, newPaddleX));
+        gameState.paddle.x = newPaddleX;
+        if(ballAttached && gameState.balls.length) { gameState.balls[0].x = gameState.paddle.x + gameState.paddle.width / 2 - gameState.balls[0].radius; }
+    }
+    
+    // Touch + Mouse for paddle drag
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); if(activeTouchId === null && e.touches.length) { activeTouchId = e.touches[0].identifier; handleDrag(e.touches[0].clientX); } });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); for(let i = 0; i < e.touches.length; i++) { if(e.touches[i].identifier === activeTouchId) { handleDrag(e.touches[i].clientX); break; } } });
+    canvas.addEventListener('touchend', (e) => { e.preventDefault(); activeTouchId = null; });
+    canvas.addEventListener('touchcancel', (e) => { e.preventDefault(); activeTouchId = null; });
+    
+    let mouseDrag = false;
+    canvas.addEventListener('mousedown', (e) => { e.preventDefault(); mouseDrag = true; handleDrag(e.clientX); });
+    window.addEventListener('mousemove', (e) => { if(mouseDrag) { e.preventDefault(); handleDrag(e.clientX); } });
+    window.addEventListener('mouseup', () => { mouseDrag = false; });
+    
+    // TAP TO LAUNCH - register click/tap on canvas
+    canvas.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        handleCanvasTap(e); 
+    });
+    canvas.addEventListener('touchstart', (e) => {
+        // We already use touchstart for dragging, but we need to detect tap without moving.
+        // We'll store potential tap and after short delay if no move, treat as tap.
+        // But easier: we'll add a separate 'touchend' with movement detection.
+        // For simplicity, we'll treat any quick tap (less than 150ms no drag) as launch.
+        if (e.touches.length === 1) {
+            const startX = e.touches[0].clientX;
+            const startY = e.touches[0].clientY;
+            const touchStartTime = Date.now();
+            const onTouchEnd = (endEvent) => {
+                const endX = endEvent.changedTouches[0].clientX;
+                const endY = endEvent.changedTouches[0].clientY;
+                const dist = Math.hypot(endX - startX, endY - startY);
+                const duration = Date.now() - touchStartTime;
+                if (dist < 15 && duration < 250) {
+                    handleCanvasTap(endEvent);
+                }
+                canvas.removeEventListener('touchend', onTouchEnd);
+                canvas.removeEventListener('touchcancel', onTouchEnd);
+            };
+            canvas.addEventListener('touchend', onTouchEnd);
+            canvas.addEventListener('touchcancel', onTouchEnd);
+        }
+    });
+
+    // Auth & UI
+    function getUsers(){ return JSON.parse(localStorage.getItem('ambusUsers') || '{}'); }
+    function createAccount(u,p){
+        if(!u||!u.trim()){ showGameToast('❌ Please enter a username!', 'warning'); return false; }
+        let users=getUsers();
+        if(users[u]){ showGameToast('⚠️ Account already exists!', 'warning'); return false; }
+        users[u]={ pass:btoa(p||''), profile:{ highScore:0,totalGames:0,bestCombo:0 } };
+        localStorage.setItem('ambusUsers',JSON.stringify(users));
+        showGameToast('✅ Account created! Signing you in...', 'success');
+        return doLogin(u,p,true);
+    }
+    function doLogin(u,p,fromCreate=false){
+        if(!u||!u.trim()){ showGameToast('❌ Please enter a username', 'warning'); return false; }
+        let users=getUsers();
+        if(users[u]){
+            if(users[u].pass !== btoa(p||'')){ showGameToast('🔐 Wrong password!', 'error'); return false; }
+            if(users[u].profile) gameProfile=users[u].profile;
+            saveProfile();
+        } else { if(!fromCreate){ showGameToast(`⚠️ Account "${u}" not found!`, 'warning'); return false; } }
+        localStorage.setItem('ambusUser',JSON.stringify({user:u}));
+        document.getElementById('loginOverlay').style.display='none';
+        document.getElementById('dashboardPanel').style.display='block';
+        updateDashboardUI();
+        startBackgroundMusic();
+        showGameToast(`✨ Welcome back, ${u}! `, 'success');
+        return true;
+    }
+    function guestLogin(){
+        localStorage.setItem('ambusUser',JSON.stringify({user:'Guest'}));
+        gameProfile = { highScore: 0, totalGames: 0, bestCombo: 0 };
+        saveProfile();
+        document.getElementById('loginOverlay').style.display='none';
+        document.getElementById('dashboardPanel').style.display='block';
+        updateDashboardUI();
+        startBackgroundMusic();
+        showGameToast('🎮 Guest mode - Select level from dropdown!', 'success');
+    }
+    function doQuit(){ if(confirm('Quit game?')){ stopBackgroundMusic(); localStorage.removeItem('ambusUser'); location.reload(); } }
+    function updateDashboardUI(){ 
+        document.getElementById('dashHighScore').innerText=gameProfile.highScore; 
+        document.getElementById('dashTotalGames').innerText=gameProfile.totalGames; 
+        document.getElementById('dashBestCombo').innerText=gameProfile.bestCombo; 
+        document.getElementById('dashLevelSelect').value=currentLevel;
+    }
+    function showGameView(){ 
+        const levelSelect = document.getElementById('dashLevelSelect');
+        const newLevel = parseInt(levelSelect.value);
+        currentLevel = newLevel;
+        document.getElementById('dashboardPanel').style.display='none'; 
+        document.getElementById('gameTab').style.display='block'; 
+        document.getElementById('statsView').style.display='none'; 
+        sessionBestScore=0; 
+        resetGameFull(); 
+        startBackgroundMusic(); 
+        startGameLoop();
+        showGameToast(`🎯 ${levels[currentLevel].name} mode! TAP ANYWHERE to launch the ball`, 'success');
+    }
+    function showDashboard(){ stopGameLoop(); document.getElementById('dashboardPanel').style.display='block'; document.getElementById('gameTab').style.display='none'; document.getElementById('statsView').style.display='none'; updateDashboardUI(); }
+    function showStats(){ stopGameLoop(); document.getElementById('dashboardPanel').style.display='none'; document.getElementById('gameTab').style.display='none'; document.getElementById('statsView').style.display='block'; document.getElementById('statSessionBest').innerText=sessionBestScore; updateStatsUI(); }
+
+    async function init(){
+        await initDB(); loadProfile(); resizeCanvas(); initGameLevel(); drawGame();
+        document.getElementById('loginBtn').onclick=()=>{ let u=document.getElementById('loginUser').value.trim(); let p=document.getElementById('loginPass').value; doLogin(u,p,false); };
+        document.getElementById('guestBtn').onclick=guestLogin;
+        document.getElementById('createBtn').onclick=()=>{ let u=document.getElementById('loginUser').value.trim(); let p=document.getElementById('loginPass').value; createAccount(u,p); };
+        document.getElementById('closeInstrBtn').onclick=()=>document.getElementById('instrOverlay').style.display='none';
+        document.getElementById('dashPlayBtn').onclick=showGameView;
+        document.getElementById('dashLevelSelect').onchange=(e)=>{ currentLevel = parseInt(e.target.value); showGameToast(`Difficulty set to ${levels[currentLevel].name}`, 'success'); };
+        document.getElementById('dashInstrBtn').onclick=()=>document.getElementById('instrOverlay').style.display='flex';
+        document.getElementById('dashStatsBtn').onclick=showStats;
+        document.getElementById('muteButton').onclick=()=>{ toggleMusicMute(); };
+        document.getElementById('dashQuitBtn').onclick=doQuit;
+        document.getElementById('menuButton').onclick=showDashboard;
+        document.getElementById('quitGameButton').onclick=doQuit;
+        document.getElementById('muteToggleBtn').onclick=()=>{ toggleMusicMute(); };
+        
+        // Game Over Overlay buttons
+        document.getElementById('tryAgainBtn').onclick = tryAgainGame;
+        document.getElementById('menuFromOverBtn').onclick = backToMenuFromGameOver;
+        
+        window.addEventListener('resize',()=>{ resizeCanvas(); drawGame(); });
+        if(localStorage.getItem('ambusUser')){ document.getElementById('loginOverlay').style.display='none'; document.getElementById('dashboardPanel').style.display='block'; updateDashboardUI(); showGameToast('🍄 Enjoy the game!', 'success'); startBackgroundMusic(); }
+        else { document.getElementById('loginOverlay').style.display='flex'; }
+    }
+    init();
+</script>
+</body>
+</html>
+```
